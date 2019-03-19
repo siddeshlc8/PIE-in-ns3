@@ -21,13 +21,13 @@ ns-3
 Scheme to Address the Bufferbloat Problem (Link: https://tools.ietf.org/html/rfc8033)
 - PIE: A Lightweight Control Scheme to Address the Bufferbloat Problem (Link:
 http://ieeexplore.ieee.org/document/6602305/)
-- NS-3 code of PIE(Link: https://github.com/freebsd/freebsd/tree/master/sys/netpfil/ipfw)
+- FreeBSD code of PIE(Link: https://github.com/freebsd/freebsd/tree/master/sys/netpfil/ipfw)
       
       Three Files on the above folder(mentioned in link)
       dn_aqm_pie.c (Line 214)
       dn_aqm_pie.h
       dn_sched_fq_pie.c (Line 386)
-- FreeBSD code of PIE(Link: https://github.com/nsnam/ns-3-dev-git/tree/master/src/traffic-control/model)
+- NS-3 code of PIE(Link: https://github.com/nsnam/ns-3-dev-git/tree/master/src/traffic-control/model)
       
       Two Files on the above folder(mentioned in link)
       pie-queue-disc.h
