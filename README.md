@@ -12,9 +12,9 @@ ns-3
 
 ## Week-1 Synopsis
 * [ Understanding PIE AQM Algorithm ](https://github.com/siddeshlc8/freebsd-pie-in-ns3/wiki/Week-1-Synopsis#pie-proportional-integral-controller-enhanced)
-* Understanding PIE Implementation in ns-3
-* Understanding PIE Implementation in FreeBSD
-* How PIE Implementation in FreeBSD is different from ns-3
+* [ Understanding PIE Implementation in ns-3 ](https://github.com/siddeshlc8/freebsd-pie-in-ns3/wiki/Week-1-Synopsis#implementation-of-pie-in-ns-3)
+* [ Understanding PIE Implementation in FreeBSD ](https://github.com/siddeshlc8/freebsd-pie-in-ns3/wiki/Week-1-Synopsis#implementation-of-pie-in-freebsd )
+* [How PIE Implementation in FreeBSD is different from ns-3]( https://github.com/siddeshlc8/freebsd-pie-in-ns3/wiki/Week-1-Synopsis#difference-between-ns-3--freebsd-pie-implementation)
 
 ## Recommended Reading
 - (RFC 8033) Proportional-Integral Controller Enhanced (PIE): A Lightweight Control
@@ -24,9 +24,9 @@ http://ieeexplore.ieee.org/document/6602305/)
 - FreeBSD code of PIE(Link: https://github.com/freebsd/freebsd/tree/master/sys/netpfil/ipfw)
       
       Three Files on the above folder(mentioned in link)
-      dn_aqm_pie.c (Line 214)
+      dn_aqm_pie.c 
       dn_aqm_pie.h
-      dn_sched_fq_pie.c (Line 386)
+      dn_sched_fq_pie.c 
 - NS-3 code of PIE(Link: https://github.com/nsnam/ns-3-dev-git/tree/master/src/traffic-control/model)
       
       Two Files on the above folder(mentioned in link)
