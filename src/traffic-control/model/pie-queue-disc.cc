@@ -52,16 +52,11 @@ TypeId PieQueueDisc::GetTypeId (void)
                    UintegerValue (1000),
                    MakeUintegerAccessor (&PieQueueDisc::m_meanPktSize),
                    MakeUintegerChecker<uint32_t> ())
-
-/***********************************************************************/
     .AddAttribute ("UseTimeStamp",
                    "Bool variable to Use TimeStamp",
                    UintegerValue (0),
                    MakeUintegerAccessor (&PieQueueDisc::m_UseTsp),
                    MakeUintegerChecker<uint32_t> ())
-
-/***********************************************************************/
-
     .AddAttribute ("A",
                    "Value of alpha",
                    DoubleValue (0.125),
@@ -264,7 +259,7 @@ void PieQueueDisc::CalculateP ()
   }
   else
     if(!GetInternalQueue (0)->GetNBytes ())
-      m_qDelay = 0;
+      m_qDelay = Seconds(0);
   
 
   if (m_burstAllowance.GetSeconds () > 0)
@@ -355,7 +350,7 @@ void PieQueueDisc::CalculateP ()
       m_burstReset = 0;
     }
 
-  m_qDelayOld = qDelay;
+  m_qDelayOld = m_qDelay;
   m_rtrsEvent = Simulator::Schedule (m_tUpdate, &PieQueueDisc::CalculateP, this);
 }
 
@@ -384,13 +379,14 @@ PieQueueDisc::DoDequeue ()
       m_inMeasurement = true;
     }
 
-    if(UseTsp)
+    if(m_UseTsp)
     {
-        m_qDelay = Time(Seconds(Simulator::Now ()) - Seconds(item->GetTimeStamp ()));
-        std::cout<<m_qDelay.GetSeconds()<<endl;
+      m_qDelay = Time(Seconds(now) - Seconds(item->GetTimeStamp ()));
     }
-    else if (m_inMeasurement)
+
+  else if (m_inMeasurement)
     {
+
           m_dqCount += pktSize;
 
         // done with a measurement cycle
@@ -423,7 +419,7 @@ PieQueueDisc::DoDequeue ()
                 m_dqCount = 0;
                 m_inMeasurement = false;
               }
-          }
+          }      
     }
    
 
