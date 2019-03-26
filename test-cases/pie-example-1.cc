@@ -23,6 +23,8 @@ uint32_t checkTimes;
 double avgQueueDiscSize;
 std::stringstream filePlotQueueDisc;
 std::stringstream filePlotQueueDiscAvg;
+std::stringstream filePlotQueueDiscThr;
+
 
 void
 CheckQueueSize (Ptr<QueueDisc> queue)
@@ -54,6 +56,30 @@ CheckQueueSize (Ptr<QueueDisc> queue)
   fPlotQueue2.close ();
 }
 
+void
+CheckThroughPut (Ptr<QueueDisc> queue)
+{
+  std::string ext = "_UseTsp";
+  if(!useTsp)
+    ext = "";
+
+  double now = Simulator::Now ().GetSeconds ();
+  double sentBytes = queue->GetStats().nTotalDequeuedBytes - 
+              (queue->GetStats().nTotalRequeuedBytes + queue->GetStats().nTotalDroppedBytesAfterDequeue);
+
+  double thp = ((((sentBytes*8)/1000000)/now)/5)*100; // 5 because bottelenect bandwidth is 5Mbps
+  // check queue size every 1/100 of a second
+  Simulator::Schedule (Seconds (0.1), &CheckThroughPut, queue);
+
+  filePlotQueueDiscThr << dir + "throughput"+ext+".plotme";
+
+  remove (filePlotQueueDiscThr.str ().c_str ());
+
+  std::ofstream fPlotQueue3 (std::stringstream (dir + "throughput"+ext+".plotme").str ().c_str (), std::ios::out | std::ios::app);
+  fPlotQueue3 << now << " " << thp << std::endl;
+  fPlotQueue3.close ();
+}
+
 void InstallPacketSink (Ptr<Node> node, uint16_t port)
 {
   PacketSinkHelper sink ("ns3::TcpSocketFactory",
@@ -82,10 +108,12 @@ int main (int argc, char *argv[])
   std::string queue_disc_type = "PieQueueDisc";
   uint32_t dataSize = 1446;
   uint32_t delAckCount = 2;
+  bool flowMonitor=false;
 
 
   CommandLine cmd;
   cmd.AddValue ("useTsp", "Use TimeStamp", useTsp);
+  cmd.AddValue ("flowMonitor", "Use flowMonitor", flowMonitor);
   cmd.Parse (argc,argv);
 
   uv->SetStream (stream);
@@ -177,7 +205,7 @@ int main (int argc, char *argv[])
   Config::SetDefault ("ns3::PieQueueDisc::MaxSize", StringValue ("100p"));
   Config::SetDefault ("ns3::PieQueueDisc::MeanPktSize", UintegerValue (meanPktSize));
   Config::SetDefault ("ns3::PieQueueDisc::DequeueThreshold", UintegerValue (10000));
-  Config::SetDefault ("ns3::PieQueueDisc::QueueDelayReference", TimeValue (Seconds (0.2)));
+  Config::SetDefault ("ns3::PieQueueDisc::QueueDelayReference", TimeValue (Seconds (0.02)));
   Config::SetDefault ("ns3::PieQueueDisc::MaxBurstAllowance", TimeValue (Seconds (0.1)));
   Config::SetDefault ("ns3::PieQueueDisc::UseTimeStamp", UintegerValue (useTsp));
 
@@ -189,6 +217,14 @@ int main (int argc, char *argv[])
   tch.Uninstall (routers.Get (0)->GetDevice (0));
   qd.Add (tch.Install (routers.Get (0)->GetDevice (0)).Get (0));
   Simulator::ScheduleNow (&CheckQueueSize, qd.Get (0));
+  Simulator::ScheduleNow (&CheckThroughPut, qd.Get (0));
+
+  Ptr<FlowMonitor> FlowMonitor;
+  FlowMonitorHelper flowHelper;
+  if(flowMonitor)
+  {
+  FlowMonitor = flowHelper.InstallAll();
+  }
 
   uint16_t port = 50000;
   InstallPacketSink (rightNodes.Get (0), port);      // A Sink 0 Applications
@@ -207,6 +243,14 @@ int main (int argc, char *argv[])
 
   Simulator::Stop (Seconds (stopTime));
   Simulator::Run ();
+
+  if(flowMonitor)
+  {
+    std::string ext = "_UseTsp";
+    if(!useTsp)
+      ext = "";
+  FlowMonitor->SerializeToXmlFile(dir + "flowMonitor"+ext+".xml", true, true);
+  }
 
   std::cout << qd.Get (0)->GetStats();
 
