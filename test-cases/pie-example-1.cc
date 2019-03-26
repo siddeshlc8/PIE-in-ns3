@@ -1,25 +1,3 @@
-/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-/*
- * Copyright (c) 2018 NITK Surathkal
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Authors: Vivek Jain <jain.vivek.anand@gmail.com>
- *          Viyom Mittal <viyommittal@gmail.com>
- *          Mohit P. Tahiliani <tahiliani@nitk.edu.in>
- */
-
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -43,6 +21,8 @@ double stopTime = 100;
 uint32_t useTsp = 0;
 uint32_t checkTimes;
 double avgQueueDiscSize;
+std::stringstream filePlotQueueDisc;
+std::stringstream filePlotQueueDiscAvg;
 
 void
 CheckQueueSize (Ptr<QueueDisc> queue)
@@ -59,6 +39,12 @@ CheckQueueSize (Ptr<QueueDisc> queue)
   // check queue size every 1/100 of a second
   Simulator::Schedule (Seconds (0.001), &CheckQueueSize, queue);
 
+  filePlotQueueDisc << dir + "inst-queue-size"+ext+".plotme";
+  filePlotQueueDiscAvg << dir + "avg-queue-size"+ext+".plotme";
+
+  remove (filePlotQueueDisc.str ().c_str ());
+  remove (filePlotQueueDiscAvg.str ().c_str ());
+
   std::ofstream fPlotQueue1 (std::stringstream (dir + "inst-queue-size"+ext+".plotme").str ().c_str (), std::ios::out | std::ios::app);
   fPlotQueue1 << Simulator::Now ().GetSeconds () << " " << qSize << std::endl;
   fPlotQueue1.close ();
@@ -66,54 +52,6 @@ CheckQueueSize (Ptr<QueueDisc> queue)
   std::ofstream fPlotQueue2 (std::stringstream (dir + "avg-queue-size"+ext+".plotme").str ().c_str (), std::ios::out | std::ios::app);
   fPlotQueue2 << Simulator::Now ().GetSeconds () << " " << avgQueueDiscSize/checkTimes << std::endl;
   fPlotQueue2.close ();
-}
-
-static void
-CwndChangeA (uint32_t oldCwnd, uint32_t newCwnd)
-{
-  std::ofstream fPlotQueue (dir + "cwndTraces/A.plotme", std::ios::out | std::ios::app);
-  fPlotQueue << Simulator::Now ().GetSeconds () << " " << newCwnd/1446.0 << std::endl;
-  fPlotQueue.close ();
-}
-
-static void
-CwndChangeB (uint32_t oldCwnd, uint32_t newCwnd)
-{
-  std::ofstream fPlotQueue (dir + "cwndTraces/B.plotme", std::ios::out | std::ios::app);
-  fPlotQueue << Simulator::Now ().GetSeconds () << " " << newCwnd/1446.0 << std::endl;
-  fPlotQueue.close ();
-}
-
-static void
-CwndChangeC (uint32_t oldCwnd, uint32_t newCwnd)
-{
-  std::ofstream fPlotQueue (dir + "cwndTraces/C.plotme", std::ios::out | std::ios::app);
-  fPlotQueue << Simulator::Now ().GetSeconds () << " " << newCwnd/1446.0 << std::endl;
-  fPlotQueue.close ();
-}
-
-static void
-CwndChangeD (uint32_t oldCwnd, uint32_t newCwnd)
-{
-  std::ofstream fPlotQueue (dir + "cwndTraces/D.plotme", std::ios::out | std::ios::app);
-  fPlotQueue << Simulator::Now ().GetSeconds () << " " << newCwnd/1446.0 << std::endl;
-  fPlotQueue.close ();
-}
-
-static void
-CwndChangeE (uint32_t oldCwnd, uint32_t newCwnd)
-{
-  std::ofstream fPlotQueue (dir + "cwndTraces/E.plotme", std::ios::out | std::ios::app);
-  fPlotQueue << Simulator::Now ().GetSeconds () << " " << newCwnd/1446.0 << std::endl;
-  fPlotQueue.close ();
-}
-
-
-void
-TraceCwnd (uint32_t node, uint32_t cwndWindow,
-           Callback <void, uint32_t, uint32_t> CwndTrace)
-{
-  Config::ConnectWithoutContext ("/NodeList/" + std::to_string (node) + "/$ns3::TcpL4Protocol/SocketList/" + std::to_string (cwndWindow) + "/CongestionWindow", CwndTrace);
 }
 
 void InstallPacketSink (Ptr<Node> node, uint16_t port)
@@ -125,9 +63,7 @@ void InstallPacketSink (Ptr<Node> node, uint16_t port)
   sinkApps.Stop (Seconds (stopTime));
 }
 
-void InstallBulkSend (Ptr<Node> node, Ipv4Address address, uint16_t port, 
-                      uint32_t nodeId, uint32_t cwndWindow,
-                      Callback <void, uint32_t, uint32_t> CwndTrace)
+void InstallBulkSend (Ptr<Node> node, Ipv4Address address, uint16_t port)
 {
   BulkSendHelper source ("ns3::TcpSocketFactory", 
                          InetSocketAddress (address, port));
@@ -136,7 +72,6 @@ void InstallBulkSend (Ptr<Node> node, Ipv4Address address, uint16_t port,
   ApplicationContainer sourceApps = source.Install (node);
   Time timeToStart = Seconds (uv->GetValue (0, 1));
   sourceApps.Start (timeToStart);
-  Simulator::Schedule (timeToStart + Seconds (0.001), &TraceCwnd, nodeId, cwndWindow, CwndTrace);
   sourceApps.Stop (Seconds (stopTime));
 }
 
@@ -262,16 +197,18 @@ int main (int argc, char *argv[])
   InstallPacketSink (rightNodes.Get (3), port);      // D Sink 0 Applications
   InstallPacketSink (rightNodes.Get (4), port);      // E Sink 0 Applications
 
-  InstallBulkSend (leftNodes.Get (0), routerToRightIPAddress [0].GetAddress (1), port, 2, 0, MakeCallback (&CwndChangeA));
-  InstallBulkSend (leftNodes.Get (1), routerToRightIPAddress [1].GetAddress (1), port, 3, 0, MakeCallback (&CwndChangeB));
-  InstallBulkSend (leftNodes.Get (2), routerToRightIPAddress [2].GetAddress (1), port, 4, 0, MakeCallback (&CwndChangeC));
-  InstallBulkSend (leftNodes.Get (3), routerToRightIPAddress [3].GetAddress (1), port, 5, 0, MakeCallback (&CwndChangeD));
-  InstallBulkSend (leftNodes.Get (4), routerToRightIPAddress [4].GetAddress (1), port, 6, 0, MakeCallback (&CwndChangeE));
+  InstallBulkSend (leftNodes.Get (0), routerToRightIPAddress [0].GetAddress (1), port);
+  InstallBulkSend (leftNodes.Get (1), routerToRightIPAddress [1].GetAddress (1), port);
+  InstallBulkSend (leftNodes.Get (2), routerToRightIPAddress [2].GetAddress (1), port);
+  InstallBulkSend (leftNodes.Get (3), routerToRightIPAddress [3].GetAddress (1), port);
+  InstallBulkSend (leftNodes.Get (4), routerToRightIPAddress [4].GetAddress (1), port);
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   Simulator::Stop (Seconds (stopTime));
   Simulator::Run ();
+
+  std::cout << qd.Get (0)->GetStats();
 
   Simulator::Destroy ();
   return 0;

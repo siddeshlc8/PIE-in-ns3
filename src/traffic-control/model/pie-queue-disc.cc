@@ -258,8 +258,10 @@ void PieQueueDisc::CalculateP ()
       m_qDelay = qDelay;
   }
   else
-    if(!GetInternalQueue (0)->GetNBytes ())
-      m_qDelay = Seconds(0);
+  {
+    qDelay = m_qDelay;
+  }
+
   
 
   if (m_burstAllowance.GetSeconds () > 0)
@@ -350,7 +352,7 @@ void PieQueueDisc::CalculateP ()
       m_burstReset = 0;
     }
 
-  m_qDelayOld = m_qDelay;
+  m_qDelayOld = qDelay;
   m_rtrsEvent = Simulator::Schedule (m_tUpdate, &PieQueueDisc::CalculateP, this);
 }
 
@@ -383,8 +385,7 @@ PieQueueDisc::DoDequeue ()
     {
       m_qDelay = Time(Seconds(now) - Seconds(item->GetTimeStamp ()));
     }
-
-  else if (m_inMeasurement)
+    else if (m_inMeasurement)
     {
 
           m_dqCount += pktSize;
