@@ -88,7 +88,7 @@ int main (int argc, char *argv[])
   std::string accessDelay = "5ms";
 
   NodeContainer source;
-  source.Create (5);
+  source.Create (50);
 
   NodeContainer gateway;
   gateway.Create (2);
@@ -130,8 +130,8 @@ int main (int argc, char *argv[])
   accessLink.SetDeviceAttribute ("DataRate", StringValue (accessBandwidth));
   accessLink.SetChannelAttribute ("Delay", StringValue (accessDelay));
 
-  NetDeviceContainer devices[5];
-  for (int i = 0; i < 5; i++)
+  NetDeviceContainer devices[50];
+  for (int i = 0; i < 50; i++)
     {
       devices[i] = accessLink.Install (source.Get (i), gateway.Get (0));
       tchPfifo.Install (devices[i]);
@@ -158,11 +158,11 @@ int main (int argc, char *argv[])
   // Configure the source and sink net devices
   // and the channels between the source/sink and the gateway
   // Ipv4InterfaceContainer sink_Interfaces;
-  Ipv4InterfaceContainer interfaces[5];
+  Ipv4InterfaceContainer interfaces[50];
   Ipv4InterfaceContainer interfaces_sink;
   Ipv4InterfaceContainer interfaces_gateway;
 
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < 50; i++)
     {
       address.NewNetwork ();
       interfaces[i] = address.Assign (devices[i]);
@@ -173,7 +173,6 @@ int main (int argc, char *argv[])
 
   address.NewNetwork ();
   interfaces_gateway = address.Assign (devices_gateway);
-
 
   uint16_t port = 50000;
   Address sinkLocalAddress (InetSocketAddress (Ipv4Address::GetAny (), port));
@@ -208,9 +207,9 @@ int main (int argc, char *argv[])
         ext = "-DepRate";
       }
 
-      filePlotQueueDelay << pathOut << "pie-queue-delay-first"+ext+".plotme";
-      filePlotQueueSize << pathOut  << "pie-queue-size-first"+ext+".plotme";
-      filePlotThroughput << pathOut  << "pie-throughput-first"+ext+".plotme";
+      filePlotQueueDelay << pathOut << "pie-queue-delay-second"+ext+".plotme";
+      filePlotQueueSize << pathOut  << "pie-queue-size-second"+ext+".plotme";
+      filePlotThroughput << pathOut  << "pie-throughput-second"+ext+".plotme";
 
       remove (filePlotQueueDelay.str ().c_str ());
       remove (filePlotQueueSize.str ().c_str ());

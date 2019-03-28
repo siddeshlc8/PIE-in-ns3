@@ -383,7 +383,15 @@ PieQueueDisc::DoDequeue ()
 
     if(m_UseTsp)
     {
-      m_qDelay = Time(Seconds(now) - Seconds(item->GetTimeStamp ()));
+      m_qDelay = Time(Seconds(now -item->GetTimeStamp ()));
+      if(GetInternalQueue (0)->IsEmpty ())
+          m_qDelay = Time(Seconds(0));
+      else{
+        double currentSize = GetInternalQueue (0)->GetNPackets();
+        double maxSize = GetMaxSize().GetValue ();
+        double qDelay = m_qDelay.GetSeconds();
+        m_qDelay = Time(Seconds(qDelay / (currentSize/maxSize)));
+      }
     }
     else if (m_inMeasurement)
     {
