@@ -24,15 +24,15 @@ timestamping based approach to calculate queuing delay in PIE and implement the 
 Scheme to Address the Bufferbloat Problem (Link: https://tools.ietf.org/html/rfc8033)
 - PIE: A Lightweight Control Scheme to Address the Bufferbloat Problem (Link:
 http://ieeexplore.ieee.org/document/6602305/)
-- FreeBSD code of PIE(Link: https://github.com/freebsd/freebsd/tree/master/sys/netpfil/ipfw)
+- FreeBSD code of PIE [`/sys/netpfil/ipfw`](https://github.com/freebsd/freebsd/tree/master/sys/netpfil/ipfw)
       
       Three Files on the above folder(mentioned in link)
       dn_aqm_pie.c 
       dn_aqm_pie.h
       dn_sched_fq_pie.c 
-- ns-3 code of PIE(Link: https://github.com/nsnam/ns-3-dev-git/tree/master/src/traffic-control/model)
-      
-      Two Files on the above folder(mentioned in link)
-      pie-queue-disc.h
-      pie-queue-disc.cc
+- ns-3 code of PIE 
+
+  [`/src/traffic-control/model`](https://github.com/nsnam/ns-3-dev-git/tree/master/src/traffic-control/model)\
+  |--- pie-queue-disc.h\
+  |--- pie-queue-disc.cc\
 
