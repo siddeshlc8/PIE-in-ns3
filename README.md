@@ -20,10 +20,9 @@ timestamping based approach to calculate queuing delay in PIE and implement the 
 * [ Testing the Implementation against departure rate calculation method. ](https://github.com/siddeshlc8/freebsd-pie-in-ns3/wiki/Week-2-Synopsis#testing)
 
 ## Recommended Reading
-- (RFC 8033) Proportional-Integral Controller Enhanced (PIE): A Lightweight Control
-Scheme to Address the Bufferbloat Problem (Link: https://tools.ietf.org/html/rfc8033)
-- PIE: A Lightweight Control Scheme to Address the Bufferbloat Problem (Link:
-http://ieeexplore.ieee.org/document/6602305/)
+- [(RFC 8033) Proportional-Integral Controller Enhanced (PIE): A Lightweight Control
+Scheme to Address the Bufferbloat Problem ](https://tools.ietf.org/html/rfc8033)
+- [PIE: A Lightweight Control Scheme to Address the Bufferbloat Problem ](http://ieeexplore.ieee.org/document/6602305/)
 - FreeBSD code of PIE 
 
   [`/sys/netpfil/ipfw`](https://github.com/freebsd/freebsd/tree/master/sys/netpfil/ipfw)
