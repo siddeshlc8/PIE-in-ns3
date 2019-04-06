@@ -140,7 +140,7 @@ private:
   double m_a;                                   //!< Parameter to pie controller
   double m_b;                                   //!< Parameter to pie controller
   uint32_t m_dqThreshold;                       //!< Minimum queue size in bytes before dequeue rate is measured
-  uint32_t m_UseTsp;                                //!< Parameter to whether to use TimeStamp or not to caluculate queue delay
+  bool m_useTsp;                                //!< Bool variable to use Timestamp or Departure rate
 
   // ** Variables maintained by PIE
   double m_dropProb;                            //!< Variable used in calculation of drop probability

@@ -1,0 +1,30 @@
+set xrange [0:100]
+set yrange [0:100]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "Queue-Delay-Second.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Queue Delay (ms)" font "Verdana"
+set key outside;
+set key right top;
+plot "pie-queue-delay-second-DepRate.plotme" title "Dep Rate" with lines lw 1.5,"pie-queue-delay-second-UseTsp.plotme" title "TimeStamp" with lines lw 1.5
+
+set xrange [0:100]
+set yrange [0:100]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "Inst-Queue-Second.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Queue Size (Packets)" font "Verdana"
+set key outside;
+set key right top;
+plot "pie-queue-size-second-DepRate.plotme" title "Dep Rate" with lines lw 1.5,"pie-queue-size-second-UseTsp.plotme" title "TimeStamp" with lines lw 1.5
+
+set xrange [0:100]
+set yrange [0:100]
+set terminal pngcairo enhanced color lw 2 size 800,600 font 'Arial-Bold'
+set output "Throughput-Second.png"
+set xlabel "Time (sec)" font "Verdana"
+set ylabel "Throughput (%)" font "Verdana"
+set key outside;
+set key right top;
+plot "pie-throughput-second-DepRate.plotme" title "Dep Rate" with lines lw 1.5,"pie-throughput-second-UseTsp.plotme" title "TimeStamp" with lines lw 1.5
+

@@ -33,7 +33,6 @@
 #include "ns3/abort.h"
 #include "pie-queue-disc.h"
 #include "ns3/drop-tail-queue.h"
-#include "ns3/net-device-queue-interface.h"
 
 namespace ns3 {
 
@@ -53,10 +52,10 @@ TypeId PieQueueDisc::GetTypeId (void)
                    MakeUintegerAccessor (&PieQueueDisc::m_meanPktSize),
                    MakeUintegerChecker<uint32_t> ())
     .AddAttribute ("UseTimeStamp",
-                   "Bool variable to Use TimeStamp",
-                   UintegerValue (0),
-                   MakeUintegerAccessor (&PieQueueDisc::m_UseTsp),
-                   MakeUintegerChecker<uint32_t> ())
+                   "True to use TimeStamp",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&PieQueueDisc::m_useTsp),
+                   MakeBooleanChecker ())
     .AddAttribute ("A",
                    "Value of alpha",
                    DoubleValue (0.125),
@@ -243,26 +242,21 @@ void PieQueueDisc::CalculateP ()
   double p = 0.0;
   bool missingInitFlag = false;
 
-  if(!m_UseTsp)
-  {
-      if (m_avgDqRate > 0)
-        {
-          qDelay = Time (Seconds (GetInternalQueue (0)->GetNBytes () / m_avgDqRate));
-        }
-      else
-        {
-          qDelay = Time (Seconds (0));
-          missingInitFlag = true;
-        }
-
-      m_qDelay = qDelay;
-  }
+  if(m_useTsp)
+  	{
+  	  qDelay = m_qDelay;
+  	}
+  else if (m_avgDqRate > 0)
+    {
+      qDelay = Time (Seconds (GetInternalQueue (0)->GetNBytes () / m_avgDqRate));
+    }
   else
-  {
-    qDelay = m_qDelay;
-  }
+    {
+      qDelay = Time (Seconds (0));
+      missingInitFlag = true;
+    }
 
-  
+  m_qDelay = qDelay;
 
   if (m_burstAllowance.GetSeconds () > 0)
     {
@@ -381,56 +375,49 @@ PieQueueDisc::DoDequeue ()
       m_inMeasurement = true;
     }
 
-    if(m_UseTsp)
+  if (m_inMeasurement)
     {
-      m_qDelay = Time(Seconds(now -item->GetTimeStamp ()));
-      if(GetInternalQueue (0)->IsEmpty ())
-          m_qDelay = Time(Seconds(0));
-      else{
-        double currentSize = GetInternalQueue (0)->GetNPackets();
-        double maxSize = GetMaxSize().GetValue ();
-        double qDelay = m_qDelay.GetSeconds();
-        m_qDelay = Time(Seconds(qDelay / (currentSize/maxSize)));
-      }
+      if(m_useTsp)
+    	{
+    		m_qDelay = Time(Seconds(now -item->GetTimeStamp ().GetSeconds()));
+    	}
+      else
+        {
+		      m_dqCount += pktSize;
+
+		      // done with a measurement cycle
+		      if (m_dqCount >= m_dqThreshold)
+		        {
+
+		          double tmp = now - m_dqStart;
+
+		          if (tmp > 0)
+		            {
+		              if (m_avgDqRate == 0)
+		                {
+		                  m_avgDqRate = m_dqCount / tmp;
+		                }
+		              else
+		                {
+		                  m_avgDqRate = (0.5 * m_avgDqRate) + (0.5 * (m_dqCount / tmp));
+		                }
+		            }
+
+		          // restart a measurement cycle if there is enough data
+		          if (GetInternalQueue (0)->GetNBytes () > m_dqThreshold)
+		            {
+		              m_dqStart = now;
+		              m_dqCount = 0;
+		              m_inMeasurement = true;
+		            }
+		          else
+		            {
+		              m_dqCount = 0;
+		              m_inMeasurement = false;
+		            }
+        		}
+        }
     }
-    else if (m_inMeasurement)
-    {
-
-          m_dqCount += pktSize;
-
-        // done with a measurement cycle
-        if (m_dqCount >= m_dqThreshold)
-          {
-
-            double tmp = now - m_dqStart;
-
-            if (tmp > 0)
-              {
-                if (m_avgDqRate == 0)
-                  {
-                    m_avgDqRate = m_dqCount / tmp;
-                  }
-                else
-                  {
-                    m_avgDqRate = (0.5 * m_avgDqRate) + (0.5 * (m_dqCount / tmp));
-                  }
-              }
-
-            // restart a measurement cycle if there is enough data
-            if (GetInternalQueue (0)->GetNBytes () > m_dqThreshold)
-              {
-                m_dqStart = now;
-                m_dqCount = 0;
-                m_inMeasurement = true;
-              }
-            else
-              {
-                m_dqCount = 0;
-                m_inMeasurement = false;
-              }
-          }      
-    }
-   
 
   return item;
 }

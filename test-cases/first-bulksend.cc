@@ -23,7 +23,7 @@ std::stringstream filePlotThroughput;
 Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
 
 float startTime = 0.0;
-float simDuration = 101;      // in seconds
+float simDuration = 501;      // in seconds
 float stopTime = startTime + simDuration;
 
 void
@@ -68,11 +68,11 @@ int main (int argc, char *argv[])
 {
   bool printPieStats = true;
   bool  isPcapEnabled = false;
-  std::string  pathOut = "/home/siddeshlc8/siddeshlc/NS3/ns-allinone-3.29/ns-3.29/results/pie/";
+  std::string  pathOut = "/home/siddeshlc8/siddeshlc/ns3/ns-3-allinone/ns-3-dev/results/";
   bool writeForPlot = true;
   std::string pcapFileName = "first-bulksend.pcap";
 
-  uint32_t useTsp=1;
+  bool useTsp=true;
 
   
 
@@ -111,7 +111,7 @@ int main (int argc, char *argv[])
   Config::SetDefault ("ns3::PieQueueDisc::DequeueThreshold", UintegerValue (10000));
   Config::SetDefault ("ns3::PieQueueDisc::QueueDelayReference", TimeValue (Seconds (0.015)));
   Config::SetDefault ("ns3::PieQueueDisc::MaxBurstAllowance", TimeValue (Seconds (0.1)));
-  Config::SetDefault ("ns3::PieQueueDisc::UseTimeStamp", UintegerValue (useTsp));
+  Config::SetDefault ("ns3::PieQueueDisc::UseTimeStamp", BooleanValue (useTsp));
 
   NS_LOG_INFO ("Install internet stack on all nodes.");
   InternetStackHelper internet;
@@ -204,7 +204,7 @@ int main (int argc, char *argv[])
     {
       std::string ext = "-UseTsp";
 
-      if(useTsp == 0){
+      if(!useTsp){
         ext = "-DepRate";
       }
 
